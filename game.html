@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Life</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+	<link rel="shortcut icon" type="image/x-icon" href="../img/system/favicon.ico">
+	<style type="text/css">
+			#canvas{
+				background-color: lightblue;
+				margin: auto; 
+				position: absolute; 
+				top: 0; 
+				left: 0; 
+				bottom: 0; 
+				right: 0; 
+				display: block; 
+				padding: 0;
+				background-color: black;
+			}
+			body{
+				overflow: hidden;
+				background: -webkit-linear-gradient(63deg, #151515 5px, transparent 5px) 0 5px,
+	            -webkit-linear-gradient(243deg, #151515 5px, transparent 5px) 10px 0px,
+	            -webkit-linear-gradient(63deg, #222 5px, transparent 5px) 0px 10px,
+	            -webkit-linear-gradient(243deg, #222 5px, transparent 5px) 10px 5px,
+	            -webkit-linear-gradient(0deg, #1b1b1b 10px, transparent 10px),
+	            -webkit-linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+				background: -moz-linear-gradient(63deg, #151515 5px, transparent 5px) 0 5px,
+				            -moz-linear-gradient(243deg, #151515 5px, transparent 5px) 10px 0px,
+				            -moz-linear-gradient(63deg, #222 5px, transparent 5px) 0px 10px,
+				            -moz-linear-gradient(243deg, #222 5px, transparent 5px) 10px 5px,
+				            -moz-linear-gradient(0deg, #1b1b1b 10px, transparent 10px),
+				            -moz-linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+				background: linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
+				            linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
+				            linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
+				            linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
+				            linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
+				            linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+				background-size: 20px 20px;
+				background-color: #131313;
+			}
+			
+	</style>
+</head>
+<body>
+		<canvas id="canvas" width="1100" height="1050" style="border: 1px solid grey;" class="canvas">Canvas не поддерживается</canvas>
+		<script type="text/javascript">
+			var cof_x = 1;
+			var cof_y = 1;
+			var canvas = document.getElementById('canvas');
+			var context = canvas.getContext('2d');
+			context.translate(100, 50);
+			
+			var mouse = false;
+			var first_start = false;
+			var playbutton_state = true;
+			var selectbutton_state = false;
+			var pastebutton_state = false;
+			var select_finish = false;
+			var tempselect_x1, tempselect_x2, tempselect_y1, tempselect_y2;
+			var select_x1, select_y1, select_x2, select_y2;
+			var type_paste = "buffer";
+			var type_pen = 0;
+			var frames = 0;
+			var time = 0;
+			var temptime = 0;
+			var temptime2 = 0;
+			var speedgame = 1;
+			var crazy_color = 0;
+			var cell = {
+				x: 0,
+				y: 0
+			}
+			var paste = {
+				buffer : [],
+				gun: []
+			}
+			var start_cells = [];
+			var mental_cells = [];
+			var cells = [];
+			var cells2 = [];
+			for(var i = 0; i < 100; i++){
+				paste.buffer[i] = [];
+				paste.gun[i] = [];
+				start_cells[i] = []
+				mental_cells[i] = [];
+				cells[i] = [];
+				cells2[i] = [];
+			}
+			for(var i = 0; i < 100; i++){
+				for(var j = 0; j < 100; j++){
+					start_cells[i][j] = 0;
+					paste.buffer[i][j] = 0;
+					paste.gun[i][j] = 0;
+					mental_cells[i][j] = 0;
+					cells[i][j] = 0;
+					cells2[i][j] = 0;
+				}
+			}
+			var x = 0;
+			var y = 12;
+			var color_gun = "#FFFF00";
+			paste.gun[x][y] = color_gun;
+			paste.gun[x + 1][y] = color_gun;
+			paste.gun[x][y + 1] = color_gun;
+			paste.gun[x + 1][y + 1] = color_gun;
+			
+			paste.gun[x + 11][y] = color_gun;
+			paste.gun[x + 11][y + 1] = color_gun;
+			paste.gun[x + 11][y + 2] = color_gun;
+			paste.gun[x + 12][y + 3] = color_gun;
+			paste.gun[x + 13][y + 4] = color_gun;
+			paste.gun[x + 14][y + 3] = color_gun;
+			paste.gun[x + 15][y + 2] = color_gun;
+			paste.gun[x + 15][y + 1] = color_gun;
+			paste.gun[x + 15][y] = color_gun;
+			paste.gun[x + 16][y + 2] = color_gun;
+			paste.gun[x + 16][y + 1] = color_gun;
+			paste.gun[x + 16][y] = color_gun;
+			paste.gun[x + 12][y - 1] = color_gun;
+			paste.gun[x + 13][y - 2] = color_gun;
+			paste.gun[x + 14][y - 1] = color_gun;
+			
+			paste.gun[x + 21][y] = color_gun;
+			paste.gun[x + 21][y - 1] = color_gun;
+			paste.gun[x + 21][y - 2] = color_gun;
+			paste.gun[x + 22][y] = color_gun;
+			paste.gun[x + 23][y] = color_gun;
+			paste.gun[x + 24][y] = color_gun;
+			paste.gun[x + 22][y - 2] = color_gun;
+			paste.gun[x + 23][y - 2] = color_gun;
+			paste.gun[x + 24][y - 2] = color_gun;
+			paste.gun[x + 24][y - 1] = color_gun;
+			paste.gun[x + 22][y - 3] = color_gun;
+			paste.gun[x + 23][y - 3] = color_gun;
+			paste.gun[x + 24][y - 3] = color_gun;
+			paste.gun[x + 25][y - 3] = color_gun;
+			paste.gun[x + 25][y - 4] = color_gun;
+			paste.gun[x + 22][y + 1] = color_gun;
+			paste.gun[x + 23][y + 1] = color_gun;
+			paste.gun[x + 24][y + 1] = color_gun;
+			paste.gun[x + 25][y + 1] = color_gun;
+			paste.gun[x + 25][y + 2] = color_gun;
+			
+			paste.gun[x + 34][y - 1] = color_gun;
+			paste.gun[x + 34][y - 2] = color_gun;
+			paste.gun[x + 35][y - 1] = color_gun;
+			paste.gun[x + 35][y - 2] = color_gun;
+			
+			paste.gun[x + 6][y - 10] = color_gun;
+			paste.gun[x + 6][y - 11] = color_gun;
+			paste.gun[x + 7][y - 11] = color_gun;
+			paste.gun[x + 6][y - 8] = color_gun;
+			paste.gun[x + 6][y - 7] = color_gun;
+			paste.gun[x + 8][y - 7] = color_gun;
+			paste.gun[x + 9][y - 7] = color_gun;
+			paste.gun[x + 9][y - 9] = color_gun;
+			paste.gun[x + 7][y - 9] = 'white';
+			paste.gun[x + 8][y - 9] = 'white';
+			paste.gun[x + 7][y - 8] = 'white';
+			paste.gun[x + 8][y - 8] = 'white';
+			
+			var pressedKeys = {};
+			function setKey(event, status) {
+				var code = event.keyCode;
+				var key;
+				
+				switch(code) {
+					case 32:
+						key = 'SPACE'; break;
+					case 37:
+						key = 'LEFT'; break;
+					case 38:
+						key = 'UP'; break;
+					case 39:
+						key = 'RIGHT'; break;
+					case 40:
+						key = 'DOWN'; break;
+					default:  
+						key = String.fromCharCode(code); // Convert ASCII codes to letters
+				}
+				pressedKeys[key] = status;
+			}
+
+			document.addEventListener('keydown', function(e) {
+				setKey(e, true);
+			});
+
+			document.addEventListener('keyup', function(e) {
+				setKey(e, false);
+			});
+
+			window.addEventListener('blur', function() {
+				pressedKeys = {};
+			});
+
+			function isDown(key){
+				return pressedKeys[key.toUpperCase()];
+			}
+
+			canvas.addEventListener('mousemove', function(e){
+					if(mouse || pastebutton_state){
+						cell.x = (e.pageX - e.target.offsetLeft) / cof_x - 100;
+						cell.y = (e.pageY - e.target.offsetTop) / cof_y - 50;
+						cell.x = Math.floor(cell.x / 10);
+						cell.y = Math.floor(cell.y / 10);			
+					}
+				}
+			);
+			canvas.addEventListener('mousedown', function(e){
+					mouse = true;
+					cell.x = (e.pageX - e.target.offsetLeft) / cof_x - 100;
+					cell.y = (e.pageY - e.target.offsetTop) / cof_y - 50;
+					cell.x = Math.floor(cell.x / 10);
+					cell.y = Math.floor(cell.y / 10);
+					if(cell.x >= 0 && cell.x <= 99 && cell.y >= 0 && cell.y <= 99){
+						if(selectbutton_state){
+							select_finish = false;
+							select_x1 = cell.x;
+							select_y1 = cell.y;
+						}else if(pastebutton_state){
+							for(var i = 0; i < 100; i++){
+								for(var j = 0; j < 100; j++){
+									if(mental_cells[i][j] == "purple"){
+										cells[i][j] = "white";
+									}else if(mental_cells[i][j]){
+										cells[i][j] = "#FFFF00";
+									}
+								}
+							}
+							for(var i = 0; i < 100; i++){
+								for(var j = 0; j < 100; j++){
+									mental_cells[i][j] = 0;
+								}
+							}
+						}
+					}
+				}
+			);
+			canvas.addEventListener('mouseup', function(e){
+					mouse = false;
+					if(cell.x >= 6 && cell.x <= 8 && cell.y >= -4 && cell.y <= -2){  //Play
+						playbutton_state = !playbutton_state;
+					}else if(cell.x >= 1 && cell.x <= 3 && cell.y >= -4 && cell.y <= -2 && speedgame >= 0.125){ //Back arrow
+						speedgame /= 2;
+					}else if(cell.x >= 11 && cell.x <= 13 && cell.y >= -4 && cell.y <= -2 && speedgame <= 32){ //Front arrow
+						speedgame *= 2;
+					}else if(cell.x >= 16 && cell.x <= 18 && cell.y >= -4 && cell.y <= -2){ //Refresh
+						playbutton_state = true;
+						first_start = false;
+						for(var i = 0; i < 100; i++){
+							for(var j = 0; j < 100; j++){
+								cells[i][j] = start_cells[i][j];
+								cells2[i][j] = 0;
+							}
+						}
+					}else if(cell.x >= 21 && cell.x <= 23 && cell.y >= -4 && cell.y <= -2){ //Pen
+						type_pen++;
+					}else if(cell.x >= 26 && cell.x <= 28 && cell.y >= -4 && cell.y <= -2){ //Crazy colors
+						if(crazy_color > 0) crazy_color = 0
+						else crazy_color = 1;
+					}else if(cell.x >= 31 && cell.x <= 33 && cell.y >= -4 && cell.y <= -2){ //Gun
+						type_paste = "gun";
+						selectbutton_state = false;
+						select_finish = false;
+						select_x1 = 0;
+						select_x2 = 0;
+						select_y1 = 0;
+						select_y2 = 0;						
+						pastebutton_state = !pastebutton_state;
+						for(var i = 0; i < 100; i++){
+							for(var j = 0; j < 100; j++){
+								if(paste.gun[i][j] == "white"){
+									mental_cells[i][j] = "purple"
+								}else{
+									mental_cells[i][j] = paste.gun[i][j];
+								}
+							}
+						}
+					}else if(cell.x >= -8 && cell.x <= -2 && cell.y >= 1 && cell.y <= 3){  //Select
+						selectbutton_state = !selectbutton_state;
+						if(!selectbutton_state){
+							select_finish = false;
+							select_x1 = 0;
+							select_x2 = 0;
+							select_y1 = 0;
+							select_y2 = 0;
+						}
+					}else if(cell.x >= -8 && cell.x <= -2 && cell.y >= 5 && cell.y <= 7){ //Copy || Paste
+						if(select_finish){
+							if(select_x1 > select_x2){
+								tempselect_x1 = select_x2;
+								tempselect_x2 = select_x1;
+							}else{
+								tempselect_x1 = select_x1;
+								tempselect_x2 = select_x2;
+							}
+							if(select_y1 > select_y2){
+								tempselect_y1 = select_y2;
+								tempselect_y2 = select_y1;
+							}else{
+								tempselect_y1 = select_y1;
+								tempselect_y2 = select_y2;
+							}
+							for(var i = 0; i < 100; i++){
+								for(var j = 0; j < 100; j++){
+									paste.buffer[i][j] = 0;
+								}
+							}
+							for(var i = tempselect_x1; i < tempselect_x2; i++){
+								for(var j = tempselect_y1; j < tempselect_y2; j++){
+									paste.buffer[i - tempselect_x1][j - tempselect_y1] = cells[i][j];
+								}
+							}
+							select_finish = false; //Снять выделение
+							selectbutton_state = false;
+							select_x1 = 0;
+							select_x2 = 0;
+							select_y1 = 0;
+							select_y2 = 0;
+						}else if(!selectbutton_state){
+							type_paste = "buffer";
+							pastebutton_state = !pastebutton_state;
+							for(var i = 0; i < 100; i++){
+								for(var j = 0; j < 100; j++){
+									if(paste[type_paste][i][j] == "white"){
+										mental_cells[i][j] = "purple"
+									}else{
+										mental_cells[i][j] = paste[type_paste][i][j];
+									}
+								}
+							}
+						}
+					}else if(cell.x >= -8 && cell.x <= -2 && cell.y >= 9 && cell.y <= 11 && select_finish){ //Cut
+						if(select_x1 > select_x2){
+							tempselect_x1 = select_x2;
+							tempselect_x2 = select_x1;
+						}else{
+							tempselect_x1 = select_x1;
+							tempselect_x2 = select_x2;
+						}
+						if(select_y1 > select_y2){
+							tempselect_y1 = select_y2;
+							tempselect_y2 = select_y1;
+						}else{
+							tempselect_y1 = select_y1;
+							tempselect_y2 = select_y2;
+						}
+						for(var i = 0; i < 100; i++){
+							for(var j = 0; j < 100; j++){
+								paste.buffer[i][j] = 0;
+							}
+						}
+						for(var i = tempselect_x1; i < tempselect_x2; i++){
+							for(var j = tempselect_y1; j < tempselect_y2; j++){
+								paste.buffer[i - tempselect_x1][j - tempselect_y1] = cells[i][j];
+								cells[i][j] = 0;
+								cells2[i][j] = 0;
+							}
+						}
+						select_finish = false;
+						selectbutton_state = false;
+						select_x1 = 0;
+						select_x2 = 0;
+						select_y1 = 0;
+						select_y2 = 0;
+					}
+					if(selectbutton_state){ //Select finishing
+						if(select_x1 != select_x2 && select_y1 != select_y2){
+							select_finish = true;
+						}else{
+							select_finish = false;
+						}
+					}
+					if(pastebutton_state && cell.x >= 0 && cell.x <= 99 && cell.y >= 0 && cell.y <= 99){
+						pastebutton_state = false;
+					}
+				}
+			);
+
+			
+			function game(){
+				var now = Date.now();
+				var dt = (now - last)/1000;
+				update(dt);
+				render();
+				last = now;
+				requestAnimFrame(game);
+			}
+			
+
+			function found_cells(i, j){
+				i += 100;
+				j += 100;
+				var count = 0;
+				if(cells[i % 100][(j + 1) % 100]) count++;		//i, j + 1
+				if(cells[(i+1) % 100][(j + 1) % 100]) count++;	//i + 1, j + 1	
+				if(cells[(i-1) % 100][(j + 1) % 100]) count++;	// i - 1, j + 1
+				if(cells[(i+1) % 100][(j - 1) % 100]) count++;	// i + 1, j - 1
+				if(cells[i % 100][(j - 1) % 100]) count++;		// i, j - 1
+				if(cells[(i-1) % 100][(j - 1) % 100]) count++;	//i - 1, j - 1
+				if(cells[(i+1) % 100][j % 100]) count++;		// i + 1, j
+				if(cells[(i-1) % 100][j % 100]) count++;		// i - 1, j
+				return count;
+			}
+
+			function update(dt){
+				if(isDown('UP') || isDown('W')){
+					var temparr;
+					
+					for(var i = 0; i < 100; i++){
+						temparr = cells[i][0];
+						for(var j = 0; j < 99; j++){
+							cells[i][j] = cells[i][j + 1];
+						}
+						cells[i][99] = temparr;
+					}
+				}
+				if(isDown('Down') || isDown('S')){
+					var temparr;
+					for(var i = 0; i < 100; i++){
+						temparr = cells[i][99];
+						for(var j = 99; j > 0; j--){
+							cells[i][j] = cells[i][j - 1];
+						}
+						cells[i][0] = temparr;
+					}
+				}
+				if(isDown('Left') || isDown('A')){
+					var temparr;
+					for(var i = 0; i < 100; i++){
+						temparr = cells[0][i];
+						for(var j = 0; j < 99; j++){
+							cells[j][i] = cells[j + 1][i];
+						}
+						cells[99][i] = temparr; 
+					}
+				}
+				if(isDown('Right') || isDown('D')){
+					var temparr;
+					for(var i = 0; i < 100; i++){
+						temparr = cells[99][i];
+						for(var j = 99; j > 0; j--){
+							cells[j][i] = cells[j - 1][i];
+						}
+						cells[0][i] = temparr;
+					}
+				}
+				if(!playbutton_state){
+					if(!first_start){
+						for(var i = 0; i < 100; i++){
+							for(var j = 0; j < 100; j++){
+								start_cells[i][j] = cells[i][j];
+							}
+						}
+						first_start = true;
+					}
+					if(!(Math.floor(time * speedgame) % 1) && Math.floor(time * speedgame) != temptime){
+					var newcolor = '#' + Math.random().toString(16).slice(2, 8);
+						for (var i = 0; i < 100; i++) {
+							for (var j = 0; j < 100; j++) {
+								if(cells[i][j] != 0 && cells[i][j] != "white" && (found_cells(i, j) > 3 || found_cells(i, j) < 2)){
+									cells2[i][j] = 0;
+								}
+								else if(cells[i][j] == 0 && found_cells(i, j) == 3){
+									cells2[i][j] = newcolor;
+								}else{
+									cells2[i][j] = cells[i][j];
+								}
+
+							}
+						}
+						for (var i = 0; i < 100; i++) {
+							for (var j = 0; j < 100; j++) {
+								cells[i][j] = cells2[i][j];
+
+							}
+						}
+					}
+				temptime = Math.floor(time * speedgame);
+				}
+				if(temptime2 != Math.floor(time)){
+					temptime2 = Math.floor(time);
+					console.log(frames);
+					frames = 0;
+				}
+				time += dt;
+				frames += 1;
+			}
+
+			function render() {
+				var width = window.innerWidth;
+				var height = window.innerHeight;
+				if(width/height > 1100 / 1050){
+					$('canvas').css('height', height);
+					$('canvas').css('width', height / 1050 * 1100);
+					cof_y = height/1050
+					cof_x = height / 1050;
+				}
+				else{
+					$('canvas').css('width', width);
+					$('canvas').css('height', width / 1100 * 1050);
+					cof_x = (width / 1100 * 1050)/1050;
+					cof_y = width / 1100;
+				}
+				
+				if(cell.x >= 0 && cell.y >= 0 && cell.x <= 100 && cell.y <= 100){ //Рисовка при движении мышкой
+					if(mouse && !pastebutton_state){
+						if(selectbutton_state){
+							select_x2 = cell.x;
+							select_y2 = cell.y;
+						}else if(cell.x <= 99 && cell.y <= 99){
+							if(type_pen % 3 == 0){
+								cells[cell.x][cell.y] = "#FFFF00";
+							}else if(type_pen % 3 == 1){
+								cells[cell.x][cell.y] = "white";
+							}else if(type_pen % 3 == 2){
+								cells[cell.x][cell.y] = 0;
+							}
+						}
+					}else if(pastebutton_state && !mouse){
+						for(var i = 0; i < 100; i++){
+							for(var j = 0; j < 100; j++){
+								mental_cells[i][j] = 0;
+							}
+						}
+						for(var i = 0; i < 100; i++){
+							for(var j = 0; j < 100; j++){
+								if(paste[type_paste][i][j] == "white"){
+									mental_cells[(i + cell.x) % 100][(j + cell.y) % 100] = "purple";
+								}else{
+									mental_cells[(i + cell.x) % 100][(j + cell.y) % 100] = paste[type_paste][i][j];
+								}
+							}
+						}
+					}
+				}
+				
+				
+				if(select_x1 > select_x2){ //Расстановка углов прямоугольника выделения
+					tempselect_x1 = select_x2;
+					tempselect_x2 = select_x1;
+				}else{
+					tempselect_x1 = select_x1;
+					tempselect_x2 = select_x2;
+				}
+				if(select_y1 > select_y2){
+					tempselect_y1 = select_y2;
+					tempselect_y2 = select_y1;
+				}else{
+					tempselect_y1 = select_y1;
+					tempselect_y2 = select_y2;
+				}
+				
+				context.fillStyle = "black";
+				context.fillRect(0, 0, 1000, 1000);
+				for(var i = 0; i < 100; i++){	//Прорисовка клеточек
+					for(var j = 0; j < 100; j++){
+						if(cells[i][j]){
+							if(crazy_color > 0){
+								context.fillStyle = context.fillStyle = '#' + Math.random().toString(16).slice(2, 8);
+							}else{
+								context.fillStyle = cells[i][j];		
+							}
+							context.fillRect(i * 10, j * 10, 10, 10);
+						}
+						
+						if(mental_cells[i][j] && pastebutton_state){
+							context.globalAlpha = 0.5;
+							if(mental_cells[i][j] == "purple"){
+								context.fillStyle = "white";
+							}else{
+								context.fillStyle = "#FFFF00";
+							}
+							context.fillRect(i * 10, j * 10, 10, 10);
+							context.globalAlpha = 1;
+						}
+						
+					}
+				}
+			
+				context.lineWidth = "0.65";
+				context.strokeStyle = "grey";
+				for(var i = 0; i < 100; i++){	//Вертикальные
+					context.beginPath();
+					context.moveTo (i * 10, 0);
+					context.lineTo(i * 10, 1000);
+					context.stroke();
+					context.closePath();
+					context.beginPath(); //Горизонтальные
+					context.moveTo (0, i * 10);
+					context.lineTo(1000, i * 10);
+					context.stroke();
+					context.closePath();
+				}
+				
+				if(select_finish)context.lineWidth = '2'; //Select area
+				else context.lineWidth = "1";
+				context.strokeStyle = "purple"; 
+				context.globalAlpha = 0.5;
+				context.fillStyle = "purple"
+				context.fillRect(tempselect_x1*10, tempselect_y1*10, (tempselect_x2 - tempselect_x1)*10, (tempselect_y2 - tempselect_y1)*10);
+				context.globalAlpha = 1;
+				context.strokeRect(tempselect_x1*10, tempselect_y1*10, (tempselect_x2 - tempselect_x1)*10, (tempselect_y2 - tempselect_y1)*10);
+				
+				var my_gradient = context.createLinearGradient(0,0,0,1000); //Панелька
+				my_gradient.addColorStop(0,"grey");
+				my_gradient.addColorStop(1,"lightblue");
+				context.fillStyle = my_gradient;
+				context.fillRect(0, -50, 1100, 50);
+				context.fillRect(-100, -50, 100, 1050);
+				
+				context.fillStyle = "black";	//Arrow back
+				context.fillRect(11, 10 - 50, 30, 30);
+				if(mouse && cell.x >= 1 && cell.x <= 3 && cell.y >= -4 && cell.y <= -2) context.fillStyle = "grey";
+				else context.fillStyle = "blue";
+				context.beginPath(); 
+				context.moveTo (25, 25 -50);	//first subarrow
+				context.lineTo(35, 15 - 50);
+				context.lineTo(35, 35 - 50);
+				context.fill();
+				context.moveTo (15, 25 - 50);	//second subarrow
+				context.lineTo(25, 15 - 50);
+				context.lineTo(25, 35 - 50);
+				context.fill();
+				context.closePath();
+				
+				context.fillStyle = "black"; //Play Button
+				context.fillRect(60, 10 - 50, 30, 30);
+				if(mouse && cell.x >= 6 && cell.x <= 8 && cell.y >= -4 && cell.y <= -2) context.fillStyle = "grey";
+				else if(playbutton_state)context.fillStyle = "yellow";
+				else context.fillStyle = "green";
+				context.beginPath();			
+				if(playbutton_state){
+					context.moveTo (85, 25 - 50);
+					context.lineTo(70, 15 - 50);
+					context.lineTo(70, 35 - 50);
+					context.fill();
+				}
+				else{
+					context.fillRect(67, 18 - 50, 7, 15); 
+					context.fillRect(77, 18 - 50, 7, 15);
+					
+				}
+				context.closePath();
+
+				
+				context.fillStyle = "black";	//Arrow front
+				context.fillRect(109, 10 - 50, 30, 30);
+				if(mouse && cell.x >= 11 && cell.x <= 13 && cell.y >= -4 && cell.y <= -2) context.fillStyle = "grey";
+				else context.fillStyle = "blue";
+				context.beginPath();              
+				context.moveTo (135, 25 - 50);	//first subarrow
+				context.lineTo(125, 15 - 50);
+				context.lineTo(125, 35 - 50);
+				context.fill();
+				context.moveTo (125, 25 - 50);	//second subarrow
+				context.lineTo(115, 15 - 50);
+				context.lineTo(115, 35 - 50);
+				context.fill();
+				context.closePath();
+				
+				context.beginPath(); //Restore
+				context.fillStyle = "black";	
+				context.fillRect(159, 10 - 50, 30, 30);
+				if(mouse && cell.x >= 16 && cell.x <= 18 && cell.y >= -4 && cell.y <= -2){
+					context.fillStyle = "grey";
+					context.strokeStyle = "grey";
+				}
+				else {
+					context.fillStyle = "red";
+					context.strokeStyle = "red";
+				}
+				context.lineWidth = 3;
+				context.arc(174, 25 -50, 8, 0.5, 2*3.14 - 1, false);
+				context.stroke();
+				context.lineWidth = 1;
+				context.closePath()
+				context.beginPath();
+				context.moveTo(33+ 74 + 74, 13 - 50); //arrow refresh
+				context.lineTo(36+ 74 + 74, 24 - 50);
+				context.lineTo (26 + 148, 24 - 50);	
+				context.fill();
+				context.closePath();
+				
+				context.beginPath(); //Pen, NondeadPen, Eraser
+				context.fillStyle = "black";
+				context.fillRect(209, 10 - 50, 30, 30);
+				if(mouse && cell.x >= 21 && cell.x <= 23 && cell.y >= -4 && cell.y <= -2) context.fillStyle = "grey";
+				else context.fillStyle = "white";
+				context.fillRect(221 - 3, 13 - 50, 6, 18);
+				context.moveTo(221 - 3, 13 + 18 - 50);
+				context.lineTo(221 - 3 + 6, 13+18 - 50);
+				context.lineTo (221  - 3 + 3, 13 + 24 - 50);
+				context.fill();
+				context.closePath();
+				if(type_pen % 3 == 0){
+					context.fillStyle = "yellow";
+					context.fillRect(227, 13 - 50, 6, 6);
+				}else if(type_pen % 3 == 1){
+					context.fillStyle = "white";
+					context.fillRect(227, 13 - 50, 6, 6);
+				}else if(type_pen % 3 == 2){
+					context.strokeStyle = "grey";
+					context.strokeRect(227, 13 - 50, 6, 6);
+				}
+				
+				context.fillStyle = "black"; //Randomizer color
+				context.fillRect(259, 10 - 50, 30, 30);
+				context.beginPath();
+				context.fillStyle = "yellow";
+				if(crazy_color > 0) context.fillStyle = '#' + Math.random().toString(16).slice(2, 8);
+				if(mouse && cell.x >= 26 && cell.x <= 28 && cell.y >= -4 && cell.y <= -2) context.fillStyle = "grey";
+				context.arc(174+107, 25 - 50, 3, 0, 2*3.141592, false);
+				context.fill();
+				context.closePath();
+				context.beginPath();
+				context.fillStyle = "blue";
+				if(crazy_color > 0) context.fillStyle = '#' + Math.random().toString(16).slice(2, 8);
+				if(mouse && cell.x >= 26 && cell.x <= 28 && cell.y >= -4 && cell.y <= -2) context.fillStyle = "grey";
+				context.arc(174+93, 25 - 50, 3, 0, 2*3.141592, false);
+				context.fill();
+				context.closePath();
+				context.beginPath();
+				context.fillStyle = "green";
+				if(crazy_color > 0) context.fillStyle = '#' + Math.random().toString(16).slice(2, 8);
+				if(mouse && cell.x >= 26 && cell.x <= 28 && cell.y >= -4 && cell.y <= -2) context.fillStyle = "grey";
+				context.arc(174+100, 18 - 50, 3, 0, 2*3.141592, false);
+				context.fill();
+				context.closePath();
+				context.beginPath();
+				context.fillStyle = "red";
+				if(crazy_color > 0) context.fillStyle = '#' + Math.random().toString(16).slice(2, 8);
+				if(mouse && cell.x >= 26 && cell.x <= 28 && cell.y >= -4 && cell.y <= -2) context.fillStyle = "grey";
+				context.arc(174+100, 32 - 50, 3, 0, 2*3.141592, false);
+				context.fill();
+				context.closePath();
+				
+				context.fillStyle = "black"; //Gun
+				context.fillRect(309, 10 - 50, 30, 30);
+				context.fillStyle = "white";
+				if(mouse && cell.x >= 31 && cell.x <= 33 && cell.y >= -4 && cell.y <= -2) context.fillStyle = "grey";
+				context.fillRect(309 + 7, 18 - 50, 7, 15); 
+				context.fillRect(309 + 7, 18 - 50, 15, 7);
+				
+				context.fillStyle = "black"; //Select
+				context.fillRect(-85, 5, 70, 30);
+				if(selectbutton_state) context.fillStyle = "#AF00FF";
+				else context.fillStyle = "white";
+				if(cell.x >= -8 && cell.x <= -2 && cell.y >= 1 && cell.y <= 3 && mouse) context.fillStyle = "grey";
+				context.font = "25px Avengeance Heroic Avenger";
+				context.fillText("Select", -81, 28);
+				
+				if(select_finish && selectbutton_state){
+					context.fillStyle = "black"; //Copy
+					context.fillRect(-85, 45, 70, 30);
+					context.fillStyle = "white";
+					if(cell.x >= -8 && cell.x <= -2 && cell.y >= 5 && cell.y <= 7 && mouse) context.fillStyle = "grey";
+					context.font = "25px Avengeance Heroic Avenger";
+					context.fillText("Copy", -76, 68);
+					
+					context.fillStyle = "black"; //Cut
+					context.fillRect(-85, 85, 70, 30);
+					context.fillStyle = "white";
+					if(cell.x >= -8 && cell.x <= -2 && cell.y >= 9 && cell.y <= 11 && mouse) context.fillStyle = "grey";
+					context.font = "25px Avengeance Heroic Avenger";
+					context.fillText("Cut", -69, 108);
+				}else if(selectbutton_state){
+					context.fillStyle = "black";
+					context.font = "20px Avengeance Heroic Avenger";
+					context.fillText("Select area", -95, 60);
+				}else{
+					context.fillStyle = "black"; //Paste
+					context.fillRect(-85, 45, 70, 30);
+					if(pastebutton_state) context.fillStyle = "#AF00FF";
+					else context.fillStyle = "white";
+					if(cell.x >= -8 && cell.x <= -2 && cell.y >= 5 && cell.y <= 7 && mouse) context.fillStyle = "grey";
+					context.font = "25px Avengeance Heroic Avenger";
+					context.fillText("Paste", -76, 68);
+				}
+				
+				
+				
+				context.fillStyle = "white"; //Скорость игры
+				context.font = "40px Avengeance Heroic Avenger";
+				context.fillText("Speed: x" + speedgame, 750, 38 - 50);
+				
+				var gradient = context.createLinearGradient(-83, 38-50, -34,0); //Life
+				gradient.addColorStop(0,"yellow");
+				gradient.addColorStop(0.26, "#FFFF00");
+				gradient.addColorStop(0.5,"green");
+				gradient.addColorStop(0.75,"blue");
+				gradient.addColorStop(1,"red");
+				context.fillStyle = gradient;
+				context.font = "40px Avengeance Heroic Avenger";
+				context.fillText("Life", -83, 38 - 50);
+			}
+			
+			var requestAnimFrame = (function() {
+				return window.requestAnimationFrame ||
+				window.webkitRequestAnimationFrame ||
+				window.mozRequestAnimationFrame ||
+				window.oRequestAnimationFrame ||
+				window.msRequestAnimationFrame ||
+				function(callback) {
+					window.setTimeout(callback, 50);
+				};
+			})();
+			
+			last = Date.now();
+			game();
+			/*
+				Количество живых клеток в данный момент
+			*/
+		</script>
+	</body>
+</html>
